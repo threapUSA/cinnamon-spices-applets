@@ -1,0 +1,7 @@
+(threapUSA / Feb 09, 2023)
+	- forked original project
+	- modified applet.js
+		- image is now saved to {User Pictures Folder}/bingwallpaper, rather than ~/.config/bingwallpaper
+		- When a new image is downloaded, the previous image and its meta.json file are moved to a subfolder named for the image date
+		- (e.g. image for 02032023 is downloaded - previous image is moved to ./bingwallpaper/01032023)
+
