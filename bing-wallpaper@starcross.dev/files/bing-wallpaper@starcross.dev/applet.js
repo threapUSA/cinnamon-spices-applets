@@ -39,7 +39,7 @@ BingWallpaperApplet.prototype = {
 
         // Path to store data in
 //        this.wallpaperDir = `${GLib.get_user_config_dir()}/bingwallpaper`;
-	this.wallpaperDir = `${GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES)}/bingwallpaper`;
+	      this.wallpaperDir = `${GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES)}/bingwallpaper`;
         let dir = Gio.file_new_for_path(this.wallpaperDir);
         if (!dir.query_exists(null))
             dir.make_directory(null);
@@ -128,6 +128,21 @@ BingWallpaperApplet.prototype = {
             }
             else {
                 log('metadata is old, requesting new...');
+                let gmdFile = Gio.file_new_for_path(this.metaDataPath);
+                let gFile = Gio.file_new_for_path(this.wallpaperPath);
+	              //if existing metadata & wallpaper files exist, back them up...
+	              if ((gmdFile.query_exists(null)) && (gFile.query_exists(null))) 
+	              {
+		              const dirTmp = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}`);
+		              dirTmp.make_directory(null);
+
+		              const mdBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}/meta.json`);
+		              gmdFile.copy(mdBackupPath, Gio.FileCopyFlags.NONE,null,null);
+
+	                const wallpaperBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}/BingWallpaper.jpg`);
+                  gFile.copy(wallpaperBackupPath, Gio.FileCopyFlags.NONE,null,null);
+	              }
+
                 this._downloadMetaData();
             }
 
@@ -191,25 +206,8 @@ BingWallpaperApplet.prototype = {
         const regex = /_\d+x\d+./gm;
         const urlUHD = url.replace(regex, `_UHD.`);
 
-	let gFile = Gio.file_new_for_path(this.wallpaperPath);
-        let gmdFile = Gio.file_new_for_path(this.metaDataPath);
-
-	//if existing metadata file exists, back it and the image up...
-	if (gFile.query_exists(null)) 
-	{
-		const dirTmp = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}`);
-		dirTmp.make_directory(null);
-
-		const mdBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}/meta.json`);
-
-		gmdFile.copy(mdBackupPath, Gio.FileCopyFlags.NONE,null,null);
-
-	        const wallpaperBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}/BingWallpaper.jpg`);
-
-        	gFile.copy(wallpaperBackupPath, Gio.FileCopyFlags.NONE,null,null);
-
-	}
-
+	      let gFile = Gio.file_new_for_path(this.wallpaperPath);
+ 
         // open the file
         let fStream = gFile.replace(null, false, Gio.FileCreateFlags.NONE, null);
 
