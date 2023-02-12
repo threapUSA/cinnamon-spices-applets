@@ -23,6 +23,10 @@ function log(message) {
     if (logging) global.log(`[bing-wallpaper@starcross.dev]: ${message}`);
 }
 
+function convertToValidFilename(string) {
+    return (string.replace(/[\/|\\:*?"<>]/g, " "));
+}
+
 function BingWallpaperApplet(orientation, panel_height, instance_id) {
     this._init(orientation, panel_height, instance_id);
 }
@@ -130,18 +134,26 @@ BingWallpaperApplet.prototype = {
                 log('metadata is old, requesting new...');
                 let gmdFile = Gio.file_new_for_path(this.metaDataPath);
                 let gFile = Gio.file_new_for_path(this.wallpaperPath);
-	              //if existing metadata & wallpaper files exist, back them up...
-	              if ((gmdFile.query_exists(null)) && (gFile.query_exists(null))) 
+	              //if the previous metadata & wallpaper files exist, back them up...
+	              if ((gmdFile.query_exists(null)) && (gFile.query_exists(null)))
 	              {
-		              const dirTmp = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}`);
-		              dirTmp.make_directory(null);
+			// make a new directory using the image's 'startdate' (e.g. 20230210)
+		        const dirTmp = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}`);
+		        dirTmp.make_directory(null);
 
-		              const mdBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}/meta.json`);
-		              gmdFile.copy(mdBackupPath, Gio.FileCopyFlags.NONE,null,null);
-				const tmpArray = this.imageData.copyright.split("(");
-				const wallpaperFileName = tmpArray[0].trimEnd() + ".jpg";
-		              const wallpaperBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}/${wallpaperFileName}`);
-				gFile.copy(wallpaperBackupPath, Gio.FileCopyFlags.NONE,null,null);
+			// Create a new filename by sanitizing the image's copyright string (FIXFIX: assumes that this string always contains a '(', e.g. 'Bird (C Someone)')
+			// Just in case the returned, sanitized string is too long, we truncate it to 90 chars. Should be enough for most Bing image titles.
+
+			const tmpArray = this.imageData.copyright.split("(");
+                        const rootFileName = convertToValidFilename(tmpArray[0].trimEnd()).slice(0,90);
+
+			// Now save the old metadata using this filename +.json
+			const mdBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}/${rootFileName}.json`);
+			gmdFile.copy(mdBackupPath, Gio.FileCopyFlags.NONE,null,null);
+
+			// ...and the old image using filename +.jpg
+			const wallpaperBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}/${rootFileName}.jpg`);
+			gFile.copy(wallpaperBackupPath, Gio.FileCopyFlags.NONE,null,null);
 	              }
 
                 this._downloadMetaData();
