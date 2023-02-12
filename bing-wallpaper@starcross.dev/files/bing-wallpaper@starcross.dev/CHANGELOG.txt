@@ -5,3 +5,9 @@
 		- When a new image is downloaded, the previous image and its meta.json file are moved to a subfolder named for the image date
 		- (e.g. image for 02032023 is downloaded - previous image is moved to ./bingwallpaper/01032023)
 
+(threapUSA / Feb 12,2023)
+	- Changed image archive naming:
+		- when a new image+metadata are downloaded, the previous day's image (if present) is moved to folder <yesterday's date>
+		  with a name synthesized from the image description in the copyright string.
+		  e.g. if the copyright string is "Bird (© Owner)", the archived filename will be Bird.jpg
+		  The metadata is placed alongside it, preserving copyright attribution etc (e.g. Bird.json)
