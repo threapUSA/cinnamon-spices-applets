@@ -133,14 +133,15 @@ BingWallpaperApplet.prototype = {
 	              //if existing metadata & wallpaper files exist, back them up...
 	              if ((gmdFile.query_exists(null)) && (gFile.query_exists(null))) 
 	              {
-		              const dirTmp = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}`);
+		              const dirTmp = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}`);
 		              dirTmp.make_directory(null);
 
-		              const mdBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}/meta.json`);
+		              const mdBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}/meta.json`);
 		              gmdFile.copy(mdBackupPath, Gio.FileCopyFlags.NONE,null,null);
-
-	                const wallpaperBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.fullstartdate}/BingWallpaper.jpg`);
-                  gFile.copy(wallpaperBackupPath, Gio.FileCopyFlags.NONE,null,null);
+				const tmpArray = this.imageData.copyright.split("(");
+				const wallpaperFileName = tmpArray[0].trimEnd() + ".jpg";
+		              const wallpaperBackupPath = Gio.file_new_for_path(`${this.wallpaperDir}/${this.imageData.startdate}/${wallpaperFileName}`);
+				gFile.copy(wallpaperBackupPath, Gio.FileCopyFlags.NONE,null,null);
 	              }
 
                 this._downloadMetaData();
